@@ -2,6 +2,26 @@ export type RiskLevel = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 export type ReportType = "Unsafe Act" | "Unsafe Condition" | "Near Miss" | "Incident";
 export type ReportStatus = "Open" | "Under Review" | "Closed" | "Escalated";
 export type ActionStatus = "Open" | "In Progress" | "Completed" | "Overdue";
+export type ReviewDecision = "Confirmed" | "Rejected" | "Escalated" | "Pending";
+
+export interface ReviewRecord {
+  reportId: string;
+  decision: ReviewDecision;
+  reviewer: string;
+  reviewerRole: string;
+  note: string;
+  timestamp: string;
+}
+
+export interface EWCEntry {
+  reportId: string;
+  tier: "CRITICAL" | "HIGH" | "WATCHLIST";
+  flaggedAt: string;
+  alertReason: string;
+  reviewStatus: ReviewDecision;
+  reviewRecord?: ReviewRecord;
+  riskFactors: Array<{ label: string; score: number; explanation: string }>;
+}
 
 export interface SafetyReport {
   id: string;
@@ -798,6 +818,207 @@ export const CORRECTIVE_ACTIONS: CorrectiveAction[] = [
     priority: "MEDIUM",
     dueDate: "2026-10-05",
     status: "Open",
+  },
+];
+
+export const EWC_ENTRIES: EWCEntry[] = [
+  {
+    reportId: "SR-1022",
+    tier: "CRITICAL",
+    flaggedAt: "2026-09-07T06:42:00",
+    alertReason: "Exposed live 415V cable in standing water — direct electrocution pathway with no barriers. Three personnel exposed.",
+    reviewStatus: "Pending",
+    riskFactors: [
+      { label: "Hazard Severity", score: 25, explanation: "Exposed high-voltage conductor in wet conditions — maximum lethality potential." },
+      { label: "Missing Safety Controls", score: 20, explanation: "No LOTO applied, no barricade, no warning signage in place." },
+      { label: "High-Risk Activity", score: 20, explanation: "Energised electrical work near water classified as life-threatening activity." },
+      { label: "Personnel Exposure", score: 15, explanation: "Three workers walked through the hazard zone unaware during observation." },
+      { label: "Environmental Factor", score: 7, explanation: "Standing water significantly lowers resistivity, increasing shock severity." },
+    ],
+  },
+  {
+    reportId: "SR-1021",
+    tier: "CRITICAL",
+    flaggedAt: "2026-09-05T14:15:00",
+    alertReason: "Crude oil pipeline gas release reaching 45% LEL with ignition sources not isolated. 18 personnel evacuated.",
+    reviewStatus: "Escalated",
+    reviewRecord: {
+      reportId: "SR-1021",
+      decision: "Escalated",
+      reviewer: "Deepak Boruah",
+      reviewerRole: "Pipeline Integrity Manager",
+      note: "Escalated to HSSE Director and Oil India Corporate Safety. Pipeline section P14-P19 shut down pending full integrity inspection. Emergency response team deployed.",
+      timestamp: "2026-09-05T16:30:00",
+    },
+    riskFactors: [
+      { label: "Hazard Severity", score: 25, explanation: "Combustible gas above 40% LEL in open area — explosive atmosphere confirmed." },
+      { label: "Missing Safety Controls", score: 20, explanation: "Ignition sources not isolated before leak escalated to dangerous level." },
+      { label: "High-Risk Activity", score: 20, explanation: "Active pipeline depressurisation is a high-consequence operation requiring full hazard control." },
+      { label: "Similar Historical Events", score: 15, explanation: "Two prior pipeline gas-release events logged in same corridor within 12 months." },
+      { label: "Environmental Factor", score: 7, explanation: "Open area with variable wind — gas cloud dispersion unpredictable." },
+    ],
+  },
+  {
+    reportId: "SR-1019",
+    tier: "CRITICAL",
+    flaggedAt: "2026-09-04T09:08:00",
+    alertReason: "Confined space entry into fuel tank with residual hydrocarbon vapours — no atmospheric test, no buddy, no retrieval system.",
+    reviewStatus: "Confirmed",
+    reviewRecord: {
+      reportId: "SR-1019",
+      decision: "Confirmed",
+      reviewer: "Priya Sharma",
+      reviewerRole: "HSE Manager",
+      note: "Confirmed as SIF precursor. Confined space entry procedure suspended for all Production units pending audit. Corrective action CA-206 raised and assigned.",
+      timestamp: "2026-09-04T11:45:00",
+    },
+    riskFactors: [
+      { label: "Hazard Severity", score: 25, explanation: "Hydrocarbon vapour in enclosed space — asphyxiation and explosion risk simultaneously present." },
+      { label: "Missing Safety Controls", score: 20, explanation: "Atmospheric testing skipped. No buddy system. No emergency retrieval rigging." },
+      { label: "High-Risk Activity", score: 20, explanation: "Confined space entry is the highest-consequence permitted activity category." },
+      { label: "Similar Historical Events", score: 15, explanation: "SR-0799 and SR-0762 show prior confined space violations at same unit." },
+    ],
+  },
+  {
+    reportId: "SR-1024",
+    tier: "CRITICAL",
+    flaggedAt: "2026-09-10T08:31:00",
+    alertReason: "Work at 8m height with no harness, no guardrail, no permit, and expired inspection tag. Supervisor absent.",
+    reviewStatus: "Pending",
+    riskFactors: [
+      { label: "Hazard Severity", score: 25, explanation: "8-metre fall without any arrest system — fall from this height is statistically fatal in 65% of cases." },
+      { label: "Missing Safety Controls", score: 20, explanation: "No harness, guardrails absent on eastern face, permit not displayed, tag expired." },
+      { label: "High-Risk Activity", score: 20, explanation: "WAH above 2m requires permit, supervision, and fall arrest — none were in place." },
+      { label: "Similar Historical Events", score: 15, explanation: "SR-0912 and SR-0731 — repeated fall-from-height pattern in Drilling Area over 9 months." },
+      { label: "Environmental Factor", score: 7, explanation: "Supervisor absence removes the last human safety barrier at the work face." },
+    ],
+  },
+  {
+    reportId: "SR-1011",
+    tier: "CRITICAL",
+    flaggedAt: "2026-08-25T07:52:00",
+    alertReason: "H2S at 35 ppm in enclosed maintenance workshop — work permit issued without gas monitoring requirement.",
+    reviewStatus: "Rejected",
+    reviewRecord: {
+      reportId: "SR-1011",
+      decision: "Rejected",
+      reviewer: "Bimal Phukan",
+      reviewerRole: "Senior Safety Officer",
+      note: "Reviewed field data. Gas reading was from a faulty sensor later calibrated — confirmed reading was 8 ppm, below 10 ppm IDLH threshold. Reclassified as High. Gas monitors now issued as preventive action CA-210.",
+      timestamp: "2026-08-25T15:00:00",
+    },
+    riskFactors: [
+      { label: "Hazard Severity", score: 25, explanation: "H2S at 35 ppm is 3.5× the IDLH limit — immediate danger to life and health." },
+      { label: "Missing Safety Controls", score: 20, explanation: "Work permit issued without mandatory H2S monitoring — systemic permit failure." },
+      { label: "High-Risk Activity", score: 15, explanation: "Maintenance in enclosed area with process piping always requires gas monitoring." },
+      { label: "Similar Historical Events", score: 10, explanation: "No directly similar H2S events found, but enclosed maintenance incidents are recurring." },
+    ],
+  },
+  {
+    reportId: "SR-1023",
+    tier: "HIGH",
+    flaggedAt: "2026-09-08T10:05:00",
+    alertReason: "LOTO bypass on energised rotating conveyor — worker's sleeve contacted rotating shaft. Near-fatal entanglement.",
+    reviewStatus: "Pending",
+    riskFactors: [
+      { label: "Hazard Severity", score: 22, explanation: "Rotating machinery entanglement at speed is a recognised SIF mechanism in maintenance operations." },
+      { label: "Missing Safety Controls", score: 20, explanation: "LOTO isolation lock available but not applied. No second-person safety watch." },
+      { label: "High-Risk Activity", score: 18, explanation: "Lubrication on energised rotating equipment is a prohibited act in all major safety frameworks." },
+      { label: "Similar Historical Events", score: 12, explanation: "SR-0808 and SR-0763 show prior LOTO bypass events in Maintenance." },
+    ],
+  },
+  {
+    reportId: "SR-1016",
+    tier: "HIGH",
+    flaggedAt: "2026-09-01T11:20:00",
+    alertReason: "Damaged chain block (no safety latch) used to lift 2-tonne load over two personnel — uncertified rigging.",
+    reviewStatus: "Pending",
+    riskFactors: [
+      { label: "Hazard Severity", score: 22, explanation: "Dropped load of 2 tonnes at height is fatal at any point of contact." },
+      { label: "Missing Safety Controls", score: 20, explanation: "Chain block safety latch missing. Rigging uncertified. Personnel below suspended load." },
+      { label: "High-Risk Activity", score: 18, explanation: "Lifting operations over live work areas require exclusion zones and certified rigging — both absent." },
+      { label: "Similar Historical Events", score: 8, explanation: "SR-1008 crane struck-by event shows recurring overhead hazard pattern in Drilling area." },
+    ],
+  },
+  {
+    reportId: "SR-1004",
+    tier: "HIGH",
+    flaggedAt: "2026-08-14T14:37:00",
+    alertReason: "11kV switchgear operated bare-handed during live maintenance — no insulating gloves, no LOTO.",
+    reviewStatus: "Escalated",
+    reviewRecord: {
+      reportId: "SR-1004",
+      decision: "Escalated",
+      reviewer: "Arvind Saikia",
+      reviewerRole: "Electrical Supervisor",
+      note: "Escalated to Site Electrical Manager. Worker suspended from HV work pending retraining. HV access card revoked. Accompanied-work regime imposed for 30 days as per CA-211.",
+      timestamp: "2026-08-14T17:00:00",
+    },
+    riskFactors: [
+      { label: "Hazard Severity", score: 22, explanation: "11kV contact without insulation is uniformly fatal — no tolerance margin exists." },
+      { label: "Missing Safety Controls", score: 20, explanation: "Insulating gloves not worn. Equipment not de-energised. No isolation certificate." },
+      { label: "High-Risk Activity", score: 18, explanation: "Live HV maintenance is the highest-consequence electrical work category." },
+      { label: "Environmental Factor", score: 5, explanation: "MCC room had minor condensation — additional moisture risk to exposed conductors." },
+    ],
+  },
+  {
+    reportId: "SR-1010",
+    tier: "HIGH",
+    flaggedAt: "2026-08-24T13:10:00",
+    alertReason: "Hot-work sparks reached open solvent drum (30L) without hot-work permit — fire narrowly averted.",
+    reviewStatus: "Pending",
+    riskFactors: [
+      { label: "Hazard Severity", score: 22, explanation: "30L of flammable solvent in open drum adjacent to ignition source — deflagration risk." },
+      { label: "Missing Safety Controls", score: 20, explanation: "No hot-work permit. No solvent removal before grinding. No fire watch assigned." },
+      { label: "High-Risk Activity", score: 18, explanation: "Grinding near flammable materials without a permit is a fundamental safety prohibition." },
+      { label: "Similar Historical Events", score: 8, explanation: "SR-0991 — gas cylinder storage violation in same workshop shows recurring fire-risk pattern." },
+    ],
+  },
+  {
+    reportId: "SR-1014",
+    tier: "WATCHLIST",
+    flaggedAt: "2026-08-28T08:55:00",
+    alertReason: "Electrical arcing in MCC panel ignited cable insulation — no extinguisher within reach. Second arcing event in this panel this quarter.",
+    reviewStatus: "Pending",
+    riskFactors: [
+      { label: "Hazard Severity", score: 18, explanation: "Electrical fire from arcing in MCC panel — risk of rapid spread to adjacent cable trays." },
+      { label: "Missing Safety Controls", score: 15, explanation: "No portable fire extinguisher within reach. Panel overdue for maintenance inspection." },
+      { label: "High-Risk Activity", score: 12, explanation: "Arcing in live MCC is a fire and electrocution hazard requiring immediate isolation." },
+      { label: "Similar Historical Events", score: 10, explanation: "SR-0790 — prior arcing event in same electrical zone 6 weeks earlier." },
+    ],
+  },
+  {
+    reportId: "SR-1012",
+    tier: "WATCHLIST",
+    flaggedAt: "2026-08-26T10:00:00",
+    alertReason: "Unsupported scaffolding on soft ground for 6m height work — no structural certificate, visible instability.",
+    reviewStatus: "Pending",
+    riskFactors: [
+      { label: "Hazard Severity", score: 18, explanation: "Scaffold collapse from 6m height — multi-fatality potential if occupied during failure." },
+      { label: "Missing Safety Controls", score: 15, explanation: "No base plates, no sole boards, no structural inspection certificate obtained." },
+      { label: "High-Risk Activity", score: 12, explanation: "Work at height on unverified scaffold is a direct SIF precursor category." },
+      { label: "Similar Historical Events", score: 10, explanation: "SR-0992 — prior scaffold inspection bypass in same department 4 weeks earlier." },
+    ],
+  },
+  {
+    reportId: "SR-0999",
+    tier: "WATCHLIST",
+    flaggedAt: "2026-08-07T09:30:00",
+    alertReason: "Steam at 8 bar released to open vent during active work — caused by incorrect isolation instruction. No injury by chance.",
+    reviewStatus: "Confirmed",
+    reviewRecord: {
+      reportId: "SR-0999",
+      decision: "Confirmed",
+      reviewer: "Mohan Das",
+      reviewerRole: "Process Safety Engineer",
+      note: "Confirmed as Watchlist precursor. Root cause identified as outdated isolation card in circulation. All isolation cards in Production recalled and reissued. Process safety alert issued to all shifts.",
+      timestamp: "2026-08-07T14:20:00",
+    },
+    riskFactors: [
+      { label: "Hazard Severity", score: 18, explanation: "Live steam at 8 bar causes severe burns within 0.5 seconds of contact." },
+      { label: "Missing Safety Controls", score: 15, explanation: "Outdated isolation instruction in circulation — document control failure." },
+      { label: "High-Risk Activity", score: 12, explanation: "Steam system isolation must follow current permit at all times — no legacy documents." },
+    ],
   },
 ];
 

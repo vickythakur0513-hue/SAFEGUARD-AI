@@ -1,1 +1,11 @@
-{}
+{
+  "title": "SAFEGUARD AI",
+  "description": "Monitors industrial safety by analyzing risk scores, providing early warnings, detailed risk breakdowns, and enabling human review actions to enhance decision-making.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -9,8 +9,9 @@ import CorrectiveActions from "./pages/CorrectiveActions";
 import RiskHeatmap from "./pages/RiskHeatmap";
 import Analytics from "./pages/Analytics";
 import Insights from "./pages/Insights";
+import EarlyWarningCenter from "./pages/EarlyWarningCenter";
 
-type Page = "dashboard" | "reports" | "new-report" | "analysis" | "actions" | "heatmap" | "analytics" | "insights";
+type Page = "dashboard" | "reports" | "new-report" | "analysis" | "actions" | "heatmap" | "analytics" | "insights" | "ewc";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -65,6 +66,8 @@ export default function App() {
         return <Analytics />;
       case "insights":
         return <Insights />;
+      case "ewc":
+        return <EarlyWarningCenter onNavigate={navigate} onSelectReport={handleSelectReport} />;
       default:
         return <Dashboard onNavigate={navigate} />;
     }

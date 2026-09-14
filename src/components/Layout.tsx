@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, FileText, Plus, AlertTriangle, Map, BarChart3,
   Brain, Bell, Search, ChevronDown, X, Menu, Shield, LogOut,
-  User, Settings, CheckSquare,
+  User, Settings, CheckSquare, Siren,
 } from "lucide-react";
 import { REPORTS } from "../data/reports";
 import type { RiskLevel } from "../data/reports";
@@ -15,7 +15,8 @@ type Page =
   | "actions"
   | "heatmap"
   | "analytics"
-  | "insights";
+  | "insights"
+  | "ewc";
 
 interface LayoutProps {
   currentPage: Page;
@@ -25,6 +26,7 @@ interface LayoutProps {
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "ewc", label: "Early Warning Center", icon: Siren, badge: "12" },
   { id: "reports", label: "Safety Reports", icon: FileText },
   { id: "new-report", label: "New Report", icon: Plus },
   { id: "actions", label: "Corrective Actions", icon: CheckSquare },
@@ -133,16 +135,27 @@ export default function Layout({ currentPage, onNavigate, children }: LayoutProp
           <div style={{ marginBottom: 4, padding: "4px 8px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "var(--muted-foreground)", textTransform: "uppercase" }}>
             Navigation
           </div>
-          {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              className={`sidebar-link${currentPage === id ? " active" : ""}`}
-              onClick={() => onNavigate(id as Page)}
-            >
-              <Icon size={16} />
-              <span style={{ whiteSpace: "nowrap" }}>{label}</span>
-            </button>
-          ))}
+          {NAV_ITEMS.map(({ id, label, icon: Icon, ...rest }) => {
+            const badge = (rest as any).badge as string | undefined;
+            return (
+              <button
+                key={id}
+                className={`sidebar-link${currentPage === id ? " active" : ""}`}
+                onClick={() => onNavigate(id as Page)}
+              >
+                <Icon size={16} />
+                <span style={{ whiteSpace: "nowrap", flex: 1 }}>{label}</span>
+                {badge && (
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 20,
+                    background: id === "ewc" ? "rgba(239,68,68,0.2)" : "rgba(59,130,246,0.2)",
+                    color: id === "ewc" ? "#EF4444" : "#60A5FA",
+                    lineHeight: "16px",
+                  }}>{badge}</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         <div style={{ padding: "12px 8px", borderTop: "1px solid var(--border)" }}>
@@ -184,7 +197,7 @@ export default function Layout({ currentPage, onNavigate, children }: LayoutProp
             <span>SAFEGUARD AI</span>
             <span>/</span>
             <span style={{ color: "var(--foreground)", fontWeight: 500 }}>
-              {NAV_ITEMS.find((n) => n.id === currentPage)?.label || "Analysis"}
+              {NAV_ITEMS.find((n) => n.id === currentPage)?.label || (currentPage === "ewc" ? "Early Warning Center" : "Analysis")}
             </span>
           </div>
 
